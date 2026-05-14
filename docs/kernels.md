@@ -395,6 +395,23 @@ docker run --rm -ti -v $(pwd):/src linuxkit/kconfig
 1. Commit the new config files.
 1. Test that you can build the kernel with that config as `make build-<version>`, e.g. `make build-7.0.5`.
 
+
+### Automated kernel version bumps
+
+The repository includes automation to keep `KERNEL_VERSION` in `kernel/*/build-args` up to date with the latest patch releases for each series.
+
+- Script: `scripts/bump_kernel.py` — queries kernel.org for the latest patch in each `X.Y` series, updates the `KERNEL_VERSION` lines in the appropriate `build-args` files, and runs `make -C kernel update-kernel-yamls` to propagate changes to examples, tests and docs.
+- Renovate: `.github/renovate.json` config uses the `regex` manager restricted to `kernel/*/build-args` and invokes the script as a `postUpgradeTasks` command so Renovate will open a branch/PR when a bump is needed.
+- Nightly workflow: `.github/workflows/kernel-bump.yml` runs nightly (and on-demand via `workflow_dispatch`) and executes the bump script; it creates a pull request only when changes are produced.
+
+Behavior notes:
+
+- The process is idempotent and no-ops when there is no version change — no PR or commit is created in that case.
+- For standalone runs (outside Renovate), the script supports `--dry-run` and `--git-commit` modes; the latter stages and commits changes (useful for the nightly workflow).
+- The workflow and Renovate use `GITHUB_TOKEN` (or Renovate credentials) to create branches/PRs; no external credentials are required for reading kernel.org.
+
+If you need to exclude a particular series (for example `-rt` variants or EOL series) edit the `kernel/<series>/build-args` file manually — the automation is intended to cover the standard stable series only.
+
 In addition, there are tests that are applied to a specific kernel version, notably the tests in
 [020_kernel](../test/cases/020_kernel/). You will need to add a new test case for the new series,
 copying an existing one and modifying it as needed.

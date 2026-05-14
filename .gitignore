@@ -20,3 +20,4 @@ Dockerfile.media
 *-state
 artifacts/*
 tools/alpine/iid
+**/__pychache__/**

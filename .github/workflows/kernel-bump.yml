@@ -1,0 +1,48 @@
+name: Kernel auto bump
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run at 2am every day. renovate presnetly doesnt have a scheudle restricting it - so this is its schedule
+    - cron: "0 2 * * *"
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Run kernel bump script
+        run: |
+          # bump_kernel.py will create a changes.json only if the changes exist - write it to the repo root
+          uv run --python 3.13 --directory scripts/kernel-bumper bump_kernel.py --changes-to-file ../../changes.json
+
+      - name: Check for changes.json
+        id: check_changes
+        run: |
+          if [ -f changes.json ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update linuxkit YAMLs
+        if: steps.check_changes.outputs.exists == 'true'
+        run: |
+          make -C kernel update-kernel-yamls
+
+      - name: Create or update bump PR
+        if: steps.check_changes.outputs.exists == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_ACTOR: ${{ github.actor }}
+        run: |
+          uv run --python 3.13 --directory scripts/kernel-bumper post_pr.py --changes-data-file ../../changes.json

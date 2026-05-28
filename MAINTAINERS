@@ -9,6 +9,7 @@
 # This file is compiled into the MAINTAINERS file in docker/opensource.
 #
 
+barfoo
 [Rules]
 
         [Rules.maintainers]

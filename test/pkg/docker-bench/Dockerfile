@@ -13,7 +13,7 @@ COPY --from=mirror /out/ /
 
 # DOCKER_TYPE is stable, edge or test
 ENV DOCKER_TYPE stable
-ENV DOCKER_VERSION 17.06.0-ce
+ENV DOCKER_VERSION 17.0
 ENV DOCKER_SHA256 e582486c9db0f4229deba9f8517145f8af6c5fae7a1243e6b07876bd3e706620
 
 # Install just the client

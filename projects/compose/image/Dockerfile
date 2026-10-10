@@ -3,7 +3,7 @@ FROM docker/compose:1.23.2
 #   add docker client to compose than the reverse
 
 ENV DOCKER_BUCKET download.docker.com
-ENV DOCKER_VERSION 18.06.3-ce
+ENV DOCKER_VERSION 18.0
 #ENV DOCKER_SHA256 340e0b5a009ba70e1b644136b94d13824db0aeb52e09071410f35a95d94316d9
 
 # we need docker compose and docker load
